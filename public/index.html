@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ticket Locking Engine • Real-Time Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="app-container">
+    <!-- TOP HEADER -->
+    <header class="app-header">
+      <div class="brand-section">
+        <div class="logo-badge">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+            <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+          </svg>
+        </div>
+        <div>
+          <h1>RapidDispatch <span>Lock Engine</span></h1>
+          <p class="subtitle">Bulletproof Real-Time Concurrency & Ghost Disconnect Handler</p>
+        </div>
+      </div>
+
+      <div class="agent-profile">
+        <div class="status-chip" id="connection-status">
+          <span class="status-dot"></span>
+          <span class="status-label" id="status-text">Connecting...</span>
+        </div>
+        <div class="socket-badge" title="Your unique agent session ID">
+          <span class="badge-label">AGENT ID:</span>
+          <code id="my-socket-id">Connecting...</code>
+          <button id="copy-socket-btn" title="Copy Socket ID" class="icon-btn">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+              <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+            </svg>
+          </button>
+        </div>
+        <button id="simulate-drop-btn" class="btn btn-warning" title="Simulate abrupt network cut or browser crash to test ghost cleanup">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M18.36 6.64a9 9 0 1 1-12.73 0"></path>
+            <line x1="12" y1="2" x2="12" y2="12"></line>
+          </svg>
+          <span>Simulate Ghost Drop</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- METRICS RIBBON -->
+    <section class="metrics-ribbon">
+      <div class="metric-card">
+        <div class="metric-title">TOTAL TICKETS</div>
+        <div class="metric-value" id="total-tickets-count">5</div>
+      </div>
+      <div class="metric-card available-card">
+        <div class="metric-title">AVAILABLE</div>
+        <div class="metric-value text-success" id="available-tickets-count">5</div>
+      </div>
+      <div class="metric-card locked-card">
+        <div class="metric-title">CURRENTLY LOCKED</div>
+        <div class="metric-value text-danger" id="locked-tickets-count">0</div>
+      </div>
+      <div class="metric-card my-locks-card">
+        <div class="metric-title">HELD BY YOU</div>
+        <div class="metric-value text-primary" id="my-locks-count">0</div>
+      </div>
+    </section>
+
+    <!-- MAIN GRID -->
+    <main class="main-layout">
+      <!-- LEFT COLUMN: TICKETS -->
+      <section class="tickets-panel">
+        <div class="panel-header">
+          <div>
+            <h2>Dispatch Tickets</h2>
+            <p class="panel-desc">Locks are synchronized instantly across all agents via WebSockets.</p>
+          </div>
+          <!-- Custom Ticket Input Form -->
+          <form id="custom-ticket-form" class="custom-ticket-form">
+            <input type="text" id="custom-ticket-input" placeholder="e.g. TICKET-999" maxlength="30" required autocomplete="off" />
+            <button type="submit" class="btn btn-secondary">
+              <span>+ Add / Lock</span>
+            </button>
+          </form>
+        </div>
+
+        <div id="toast-container" class="toast-container"></div>
+
+        <!-- TICKETS GRID -->
+        <div class="tickets-grid" id="tickets-grid">
+          <!-- Ticket cards injected dynamically via app.js -->
+        </div>
+
+        <!-- GHOST DISCONNECT GUIDE ACCORDION -->
+        <div class="info-card">
+          <div class="info-header">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"></circle>
+              <line x1="12" y1="16" x2="12" y2="12"></line>
+              <line x1="12" y1="8" x2="12.01" y2="8"></line>
+            </svg>
+            <h3>How to verify Ghost Disconnect:</h3>
+          </div>
+          <ol class="info-steps">
+            <li>Open this URL in <strong>Tab A</strong> and <strong>Tab B</strong> side-by-side.</li>
+            <li>In <strong>Tab A</strong>, click <span class="badge-tag">Lock Ticket</span> on <code>TICKET-101</code>.</li>
+            <li>In <strong>Tab B</strong>, observe <code>TICKET-101</code> immediately lock with Tab A's Socket ID. Tab B cannot lock or unlock it.</li>
+            <li><strong>Close Tab A</strong> (or click <em>Simulate Ghost Drop</em> above).</li>
+            <li>Notice <strong>Tab B</strong> instantly marks <code>TICKET-101</code> as <span class="text-success font-semibold">Available</span> with audit log <code>reason: agent_disconnected</code>.</li>
+          </ol>
+        </div>
+      </section>
+
+      <!-- RIGHT COLUMN: LIVE AUDIT & SOCKET EVENT LOG -->
+      <aside class="audit-panel">
+        <div class="panel-header">
+          <div>
+            <h2>Real-Time Event Stream</h2>
+            <p class="panel-desc">Live Socket.IO event payloads</p>
+          </div>
+          <button id="clear-logs-btn" class="btn-text">Clear</button>
+        </div>
+
+        <div class="event-stream" id="event-stream">
+          <div class="stream-empty">Connecting to Socket.IO server...</div>
+        </div>
+
+        <div class="rest-endpoints-footer">
+          <span class="rest-label">REST APIs:</span>
+          <a href="/api/health" target="_blank" class="rest-link">/api/health</a>
+          <a href="/api/ticket-locks" target="_blank" class="rest-link">/api/ticket-locks</a>
+        </div>
+      </aside>
+    </main>
+  </div>
+
+  <!-- Socket.IO Client Script (Served automatically by Socket.IO server) -->
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,32 @@
+{
+  "name": "ticket-locking-system",
+  "version": "1.0.0",
+  "description": "Production-ready real-time Ticket Locking System with Ghost Disconnect handling using Node.js, Express, and Socket.IO",
+  "main": "src/server.js",
+  "type": "commonjs",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "nodemon src/server.js",
+    "test": "node test/ticket-locking.test.js"
+  },
+  "keywords": [
+    "ticket-lock",
+    "socket.io",
+    "real-time",
+    "concurrency",
+    "ghost-disconnect",
+    "express"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "socket.io": "^4.8.1"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.9",
+    "socket.io-client": "^4.8.1"
+  }
+}
